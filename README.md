@@ -1,6 +1,5 @@
 # MIL-STD-1750a
-#### Encode/decode MIL-STD-1750a floating-point
-##### See [specification](doc/MIL-STD-1750A.PDF)
+#### Encode/decode MIL-STD-1750a floating-point ([specification](doc/MIL-STD-1750A.PDF))
 
 ## Usage
 
