@@ -1,4 +1,5 @@
 #include <math.h>
+#include <limits.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -9,7 +10,7 @@ const hex_t invalid_hex = (hex_t){ .size = 0, .byte = 0 };
 
 // Perform an integer bitwise comparison by casting the type of the second
 // argument to the type of the first.
-#define _biteq(src, cmp) ((typeof(src))0 == (src ^ (*(typeof(src) *)&cmp)))
+#define _biteq(src, cmp, msk) ((typeof(src))0 == ((src ^ (*(typeof(src) *)&cmp)) & msk))
 
 // Encode a native IEEE-754 as 16-bit MIL-STD-1750A floating-point value.
 ms1750a16_t encode16(const ieee754_t value)
@@ -28,7 +29,7 @@ ms1750a16_t encode16(const ieee754_t value)
     ms1750a32_t mantissa = (ms1750a32_t)round(
       (ieee754_t)value / pow(2.0, (ieee754_t)exponent - 9.0)
     );
-    if (_biteq(0x8000, mantissa)) {
+    if (_biteq(0x8000, mantissa, UINT_MAX)) {
       mantissa /= 2;
       exponent += 1;
     }
@@ -52,7 +53,7 @@ ms1750a32_t encode32(const ieee754_t value)
     ms1750a32_t mantissa = (ms1750a32_t)round(
       (ieee754_t)value / pow(2.0, (ieee754_t)exponent - 23.0)
     );
-    if (_biteq(0x800000, mantissa)) {
+    if (_biteq(0x800000, mantissa, UINT_MAX)) {
       mantissa /= 2;
       exponent += 1;
     }
@@ -67,10 +68,10 @@ ieee754_t decode16(const ms1750a16_t value)
   ieee754_t result;
   if (value == 0) {
     result = 0;
-  } else if (_biteq(0x7F80, value)) {
+  } else if (_biteq(0x7F81, value, SHRT_MAX)) {
     result = NAN;
-  } else if (_biteq(0xFF80, value)) {
-    result = INFINITY;
+  } else if (_biteq(0x7F80, value, SHRT_MAX)) {
+    result = value < 0 ? -INFINITY : INFINITY;
   } else {
     ms1750a16_t exponent = value & 0x3F;
     ms1750a16_t mantissa = value / 0x40;
@@ -88,10 +89,10 @@ ieee754_t decode32(const ms1750a32_t value)
   ieee754_t result;
   if (value == 0) {
     result = 0;
-  } else if (_biteq(0x7F800000, value)) {
+  } else if (_biteq(0x7F800001, value, INT_MAX)) {
     result = NAN;
-  } else if (_biteq(0xFF800000, value)) { // -0x80000000
-    result = INFINITY;
+  } else if (_biteq(0x7F800000, value, INT_MAX)) {
+    result = value < 0 ? -INFINITY : INFINITY;
   } else {
     ms1750a32_t exponent = value & 0xFF;
     ms1750a32_t mantissa = value / 0x100;

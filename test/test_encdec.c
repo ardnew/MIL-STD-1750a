@@ -11,33 +11,33 @@
 #define ABSTOL 0.0001
 
 void test_encode16(void) {
-  // assert(encode16(NAN) == 0x7F81);
-  // assert(encode16(INFINITY) == 0x7F80);
-  // assert(encode16(-INFINITY) == 0xFF80);
+  assert(encode16(NAN) == 0x7F81);
+  assert(((encode16(INFINITY) ^ 0x7F80) & 0xFFFF) == 0);
+  assert(((encode16(-INFINITY) ^ 0xFF80) & 0xFFFF ) == 0);
   assert(encode16(0.0) == 0);
   assert(encode16(12.4) == 0x6344);
 }
 
 void test_encode32(void) {
-  // assert(encode32(NAN) == 0x7F800001);
-  // assert(encode32(INFINITY) == 0x7F800000);
-  // assert(encode32(-INFINITY) == 0xFF800000);
-  //assert(encode32(0.0) == 0);
+  assert(encode32(NAN) == 0x7F800001);
+  assert(encode32(INFINITY) == 0x7F800000);
+  assert(encode32(-INFINITY) == 0xFF800000);
+  assert(encode32(0.0) == 0);
   assert(encode32(-25.63) == 0x997AE105);
 }
 
 void test_decode16(void) {
-  // assert(isnan(decode16(0x7F80)));
-  // assert(isinf(decode16(0xFF80)) && decode16(0xFF80) < 0);
-  // assert(isinf(decode16(0x7F80)) && decode16(0x7F80) > 0);
+  assert(isnan(decode16(0x7F81)));
+  assert(isinf(decode16(0xFF80)) && decode16(0xFF80) < 0);
+  assert(isinf(decode16(0x7F80)) && decode16(0x7F80) > 0);
   assert(fabs(decode16(0) - 0.0) < ABSTOL);
   assert(decode16(0x6344) - 12.4);
 }
 
 void test_decode32(void) {
-  // assert(isnan(decode32(0x7F800000)));
-  // assert(isinf(decode32(0xFF800000)) && decode32(0xFF800000) < 0);
-  // assert(isinf(decode32(0x7F800000)) && decode32(0x7F800000) > 0);
+  assert(isnan(decode32(0x7F800001)));
+  assert(isinf(decode32(0xFF800000)) && decode32(0xFF800000) < 0);
+  assert(isinf(decode32(0x7F800000)) && decode32(0x7F800000) > 0);
   assert(fabs(decode32(0) - 0.0) < ABSTOL);
   assert(decode32(0x997AE105) - -25.63);
 }
