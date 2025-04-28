@@ -2,6 +2,7 @@ PROJECT = milstd1750a
 
 LIBRARY = lib$(PROJECT).a
 TEST_BINARY = test_$(PROJECT)
+EVAL_BINARY = eval_$(PROJECT)
 
 SRC = $(wildcard src/*.c)
 TEST_SRC = $(wildcard test/*.c)
@@ -35,24 +36,28 @@ CFLAGS = -Wall -Wextra -Werror -Wno-sign-compare -pedantic -Iinclude -std=gnu2x
 LDLIBS = -lm
 LDFLAGS = -L.
 
-all: $(LIBRARY) $(TEST_BINARY)
+all: $(LIBRARY) $(TEST_BINARY) $(EVAL_BINARY)
 
 $(LIBRARY): $(OBJ)
 	ar rcs $@ $^
 
-$(TEST_BINARY): $(TEST_OBJ) $(LIBRARY)
+$(TEST_BINARY) $(EVAL_BINARY): $(TEST_OBJ) $(LIBRARY)
 	$(CC) $(DBGFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 %.o: %.c
 	$(CC) $(DBGFLAGS) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 clean:
-	$(RM) $(OBJ) $(TEST_OBJ) $(LIBRARY) $(TEST_BINARY)
+	$(RM) $(OBJ) $(TEST_OBJ) $(LIBRARY) $(TEST_BINARY) $(EVAL_BINARY)
 
 test: $(TEST_BINARY)
 	./$(TEST_BINARY)
 
 debug: $(TEST_BINARY)
 	$(DBG) ./$(TEST_BINARY)
+
+eval: CFLAGS += -DEVAL=1
+eval: $(EVAL_BINARY)
+	$(info -- eval binary created: $(EVAL_BINARY))
 
 .PHONY: all clean test debug
